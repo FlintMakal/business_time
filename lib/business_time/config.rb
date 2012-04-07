@@ -60,7 +60,8 @@ module BusinessTime
     end
     
     def self.weekdays
-      return @weekdays unless @weekdays.nil?
+      # commenting following line as it makes the weekdays fallback to default when adding / removing a day
+      # return @weekdays unless @weekdays.nil?
       
       @weekdays = (!work_hours.empty? ? work_hours.keys : work_week).each_with_object([]) do |day_name, days|
         day_num = self.wday_to_int(day_name)
