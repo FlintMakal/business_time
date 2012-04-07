@@ -89,27 +89,50 @@ class Time
       return result *= direction
     end
     
-    result = 0
-
-    # All days in between
-    time_c = time_a
-    while time_c < time_b do
-      hours = BusinessTime::Config.end_of_workday(time_c)
-      end_of_workday = Time.parse(time_c.strftime('%Y-%m-%d ') + hours)
-      if time_c.to_date == time_b.to_date
-        if end_of_workday < time_b
-          result += end_of_workday - time_c
-          break
-        else
-          result += time_b - time_c
-          break
-        end
-      else
-        result += end_of_workday - time_c
-        time_c = Time::roll_forward(end_of_workday + 1.second)
+    # number of each day type between the 2 dates
+    monday_count = 0
+    tuesday_count = 0
+    wednesday_count = 0
+    thursday_count = 0
+    friday_count = 0
+    saturday_count = 0
+    sunday_count = 0
+    time_a.to_date.upto(time_b.to_date-1) do |day|
+      if day.wday == 1
+        monday_count += 1
+      elsif day.wday == 2
+        tuesday_count += 1
+      elsif day.wday == 3
+        wednesday_count += 1
+      elsif day.wday == 4
+        thursday_count += 1
+      elsif day.wday == 5
+        friday_count += 1
+      elsif day.wday == 6
+        saturday_count += 1
+      elsif day.wday == 7  
+        sunday_count += 1
       end
-      result += 1 if hours == "23:59:59"
     end
+    
+    # work hours for each day
+    monday_work_hours    = Time.parse(BusinessTime::Config.end_of_workday(Time.now.beginning_of_week))       - Time.parse(BusinessTime::Config.beginning_of_workday(Time.now.beginning_of_week))
+    tuesday_work_hours   = Time.parse(BusinessTime::Config.end_of_workday(Time.now.beginning_of_week+1.day)) - Time.parse(BusinessTime::Config.beginning_of_workday(Time.now.beginning_of_week+1.day))
+    wednesday_work_hours = Time.parse(BusinessTime::Config.end_of_workday(Time.now.beginning_of_week+2.day)) - Time.parse(BusinessTime::Config.beginning_of_workday(Time.now.beginning_of_week+2.day))
+    thursday_work_hours  = Time.parse(BusinessTime::Config.end_of_workday(Time.now.beginning_of_week+3.day)) - Time.parse(BusinessTime::Config.beginning_of_workday(Time.now.beginning_of_week+3.day))
+    friday_work_hours    = Time.parse(BusinessTime::Config.end_of_workday(Time.now.beginning_of_week+4.day)) - Time.parse(BusinessTime::Config.beginning_of_workday(Time.now.beginning_of_week+4.day))
+    saturday_work_hours  = Time.parse(BusinessTime::Config.end_of_workday(Time.now.beginning_of_week+5.day)) - Time.parse(BusinessTime::Config.beginning_of_workday(Time.now.beginning_of_week+5.day))
+    sunday_work_hours    = Time.parse(BusinessTime::Config.end_of_workday(Time.now.beginning_of_week+6.day)) - Time.parse(BusinessTime::Config.beginning_of_workday(Time.now.beginning_of_week+6.day))
+    
+    # work hours between the 2 dates
+    result = (monday_count * monday_work_hours) + 
+              (tuesday_count * tuesday_work_hours) +
+              (wednesday_count * wednesday_work_hours) +
+              (thursday_count * thursday_work_hours) +
+              (friday_count * friday_work_hours) +
+              (saturday_count * saturday_work_hours) +
+              (sunday_count * sunday_work_hours)
+              
     # Make sure that sign is correct
     result *= direction
   end
