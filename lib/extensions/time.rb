@@ -89,6 +89,10 @@ class Time
       return result *= direction
     end
     
+    # Both times are in different dates
+    result = Time.parse(time_a.strftime('%Y-%m-%d ') + BusinessTime::Config.end_of_workday(time_a)) - time_a   # First day
+    result += time_b - Time.parse(time_b.strftime('%Y-%m-%d ') + BusinessTime::Config.beginning_of_workday(time_b)) # Last day
+    
     # number of each day type between the 2 dates
     monday_count = 0
     tuesday_count = 0
@@ -97,22 +101,39 @@ class Time
     friday_count = 0
     saturday_count = 0
     sunday_count = 0
+    
     time_a.to_date.upto(time_b.to_date-1) do |day|
-      if day.wday == 1
+      if day.wday == 1 && day.workday?
         monday_count += 1
-      elsif day.wday == 2
+      elsif day.wday == 2 && day.workday?
         tuesday_count += 1
-      elsif day.wday == 3
+      elsif day.wday == 3 && day.workday?
         wednesday_count += 1
-      elsif day.wday == 4
+      elsif day.wday == 4 && day.workday?
         thursday_count += 1
-      elsif day.wday == 5
+      elsif day.wday == 5 && day.workday?
         friday_count += 1
-      elsif day.wday == 6
+      elsif day.wday == 6 && day.workday?
         saturday_count += 1
-      elsif day.wday == 7  
+      elsif day.wday == 7 && day.workday?
         sunday_count += 1
       end
+    end
+    
+    if time_a.to_date.wday == 1
+      monday_count -= 1
+    elsif time_a.to_date.wday == 2
+      tuesday_count -= 1
+    elsif time_a.to_date.wday == 3
+      wednesday_count -= 1
+    elsif time_a.to_date.wday == 4
+      thursday_count -= 1
+    elsif time_a.to_date.wday == 5
+      friday_count -= 1
+    elsif time_a.to_date.wday == 6
+      saturday_count -= 1
+    elsif time_a.to_date.wday == 7
+      sunday_count -= 1
     end
     
     # work hours for each day
@@ -125,7 +146,7 @@ class Time
     sunday_work_hours    = Time.parse(BusinessTime::Config.end_of_workday(Time.now.beginning_of_week+6.day)) - Time.parse(BusinessTime::Config.beginning_of_workday(Time.now.beginning_of_week+6.day))
     
     # work hours between the 2 dates
-    result = (monday_count * monday_work_hours) + 
+    result += (monday_count * monday_work_hours) + 
               (tuesday_count * tuesday_work_hours) +
               (wednesday_count * wednesday_work_hours) +
               (thursday_count * thursday_work_hours) +
