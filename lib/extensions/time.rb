@@ -93,6 +93,9 @@ class Time
     result = Time.parse(time_a.strftime('%Y-%m-%d ') + BusinessTime::Config.end_of_workday(time_a)) - time_a   # First day
     result += time_b - Time.parse(time_b.strftime('%Y-%m-%d ') + BusinessTime::Config.beginning_of_workday(time_b)) # Last day
     
+    # Special case for 24 hours working days
+    result += 1 if BusinessTime::Config.end_of_workday(time_a) == "23:59:59"
+    
     # number of each day type between the 2 dates
     monday_count = 0
     tuesday_count = 0
